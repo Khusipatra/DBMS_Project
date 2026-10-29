@@ -1,12 +1,15 @@
 USE supply_chain;
 
+USE supply_chain;
+
+DROP TABLE IF EXISTS forecast;
+DROP TABLE IF EXISTS inventory_analytics;
 DROP TABLE IF EXISTS daily_record;
 DROP TABLE IF EXISTS sku_warehouse;
 DROP TABLE IF EXISTS region;
 DROP TABLE IF EXISTS supplier;
 DROP TABLE IF EXISTS warehouse;
 DROP TABLE IF EXISTS product;
-
 CREATE TABLE product (
     sku_id        VARCHAR(10) PRIMARY KEY
 );
@@ -60,4 +63,36 @@ CREATE TABLE daily_record (
     CHECK (promotion_flag IN (0, 1))
 );
 
+
+CREATE TABLE forecast (
+    sku_id          VARCHAR(10)   NOT NULL,
+    warehouse_id    VARCHAR(10)   NOT NULL,
+    forecast_date   DATE          NOT NULL,
+    model_name      VARCHAR(20)   NOT NULL,
+    forecast_units  DECIMAL(10,2) NOT NULL,
+    lower_80        DECIMAL(10,2),
+    upper_80        DECIMAL(10,2),
+    actual_units    INT,
+    PRIMARY KEY (sku_id, warehouse_id, forecast_date, model_name),
+    FOREIGN KEY (sku_id, warehouse_id) REFERENCES sku_warehouse(sku_id, warehouse_id)
+);
+
+CREATE TABLE inventory_analytics (
+    sku_id              VARCHAR(10)   NOT NULL,
+    warehouse_id        VARCHAR(10)   NOT NULL,
+    current_stock       INT           NOT NULL,
+    avg_daily_demand    DECIMAL(10,2) NOT NULL,
+    demand_std          DECIMAL(10,2) NOT NULL,
+    safety_stock        DECIMAL(10,2) NOT NULL,
+    reorder_point       DECIMAL(10,2) NOT NULL,
+    days_of_stock       DECIMAL(10,2) NOT NULL,
+    days_until_reorder  DECIMAL(10,2) NOT NULL,
+    excess_units        DECIMAL(10,2) NOT NULL,
+    excess_value        DECIMAL(12,2) NOT NULL,
+    risk                VARCHAR(6)    NOT NULL,
+    PRIMARY KEY (sku_id, warehouse_id),
+    FOREIGN KEY (sku_id, warehouse_id) REFERENCES sku_warehouse(sku_id, warehouse_id),
+    CHECK (risk IN ('RED','YELLOW','GREEN'))
+);
 SHOW TABLES;
+USE supply_chain;
